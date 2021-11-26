@@ -13,6 +13,14 @@
         <keycloak.version>15.0.2</keycloak.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Robbilie Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/Robbilie/keycloak-id_token_hint-authenticator</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
