@@ -67,7 +67,7 @@ public class IdTokenHintAuthenticator implements Authenticator {
                 KeyUse.SIG,
                 idTokenTokenVerifier.getHeader().getRawAlgorithm()
         );
-        return (PublicKey) key;
+        return (PublicKey) key.getPublicKey();
     }
 
     @Override
