@@ -1,14 +1,14 @@
 package de.eneticum.keycloak;
 
+import org.keycloak.TokenVerifier;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.Authenticator;
-import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
-import org.keycloak.representations.JsonWebToken;
+import org.keycloak.representations.IDToken;
 import org.keycloak.services.ServicesLogger;
 import org.keycloak.utils.StringUtil;
 
@@ -22,12 +22,12 @@ public class IdTokenHintAuthenticator implements Authenticator {
         }
 
         try {
-            JWSInput jws = new JWSInput(idTokenHint);
-            JsonWebToken token = jws.readJsonContent(JsonWebToken.class);
+            IDToken idToken = TokenVerifier.create(idTokenHint, IDToken.class)
+                    .withDefaultChecks()
+                    .verify()
+                    .getToken();
 
-            // TODO: needs to be validated
-
-            UserModel user = authenticationFlowContext.getSession().users().getUserById(authenticationFlowContext.getRealm(), token.getSubject());
+            UserModel user = authenticationFlowContext.getSession().users().getUserById(authenticationFlowContext.getRealm(), idToken.getSubject());
 
             if (user == null) {
                 authenticationFlowContext.failure(AuthenticationFlowError.INVALID_USER);
@@ -36,7 +36,6 @@ public class IdTokenHintAuthenticator implements Authenticator {
 
             authenticationFlowContext.setUser(user);
             authenticationFlowContext.success();
-
         } catch (Exception e) {
             ServicesLogger.LOGGER.errorValidatingAssertion(e);
             authenticationFlowContext.failure(AuthenticationFlowError.INVALID_CREDENTIALS);
