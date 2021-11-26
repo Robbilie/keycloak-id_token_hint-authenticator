@@ -13,6 +13,7 @@ import org.keycloak.models.UserModel;
 import org.keycloak.protocol.oidc.OIDCLoginProtocol;
 import org.keycloak.representations.IDToken;
 import org.keycloak.services.ServicesLogger;
+import org.keycloak.services.Urls;
 import org.keycloak.utils.StringUtil;
 
 import java.security.PublicKey;
@@ -51,7 +52,12 @@ public class IdTokenHintAuthenticator implements Authenticator {
     private TokenVerifier<IDToken> createVerifier(String tokenString, AuthenticationFlowContext authenticationFlowContext) throws VerificationException {
         TokenVerifier<IDToken> idTokenTokenVerifier = TokenVerifier.create(tokenString, IDToken.class);
 
-        idTokenTokenVerifier.withDefaultChecks();
+        idTokenTokenVerifier.withChecks(
+                new TokenVerifier.RealmUrlCheck(Urls.realmIssuer(authenticationFlowContext.getSession().getContext().getUri().getBaseUri(), authenticationFlowContext.getRealm().getName())),
+                TokenVerifier.SUBJECT_EXISTS_CHECK,
+                new TokenVerifier.TokenTypeCheck("ID"),
+                TokenVerifier.IS_ACTIVE
+        );
 
         PublicKey pk = getPublicKey(idTokenTokenVerifier, authenticationFlowContext);
         idTokenTokenVerifier.publicKey(pk);
